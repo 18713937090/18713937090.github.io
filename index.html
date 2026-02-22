@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伐词库 - 智慧中维双语助手</title>
+    <!-- 引入Bootstrap和FontAwesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --nd-green: #008751;
+            --nd-secondary: #28a745;
+            --nd-yellow: #ffc107;
+        }
+        body {
+            background-color: #f4f7f6;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 导航栏：农大绿风格 */
+        .navbar {
+            background: linear-gradient(90deg, var(--nd-green), var(--nd-secondary));
+            color: white;
+            border-bottom: 3px solid var(--nd-yellow);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        /* 导航栏按钮样式适配 */
+        .navbar .btn-outline-light {
+            border-color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.9);
+        }
+        .navbar .btn-outline-light:hover {
+            background-color: rgba(255,255,255,0.2);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* 轮播图：响应式高度 */
+        .carousel-item {
+            height: 550px;
+            background-color: var(--nd-green);
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.8s ease-in-out;
+        }
+        /* 移动端轮播图高度适配 */
+        @media (max-width: 768px) {
+            .carousel-item {
+                height: 300px;
+            }
+            /* 移动端导航栏按钮换行 */
+            .navbar .container {
+                flex-direction: column;
+                gap: 15px;
+                padding: 10px 0;
+            }
+            .navbar .d-flex {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px !important;
+            }
+        }
+
+        /* 轮播图文字遮罩层 */
+        .carousel-caption {
+            background: rgba(0, 135, 81, 0.65);
+            padding: 20px;
+            border-radius: 20px;
+            bottom: 25%;
+            backdrop-filter: blur(5px);
+            /* 移动端适配 */
+            width: 80%;
+            margin: 0 auto;
+        }
+        .carousel-caption h5 {
+            font-size: clamp(1.5rem, 4vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        .carousel-caption p {
+            font-size: clamp(1rem, 2vw, 1.4rem);
+            font-weight: 300;
+        }
+
+        /* 功能主卡片 */
+        .main-card {
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-top: -80px;
+            background: white;
+            z-index: 100;
+            position: relative;
+        }
+
+        /* 翻译输入区 */
+        .input-area {
+            border: 2px solid #f0f2f1;
+            border-radius: 18px;
+            padding: 20px;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+        .input-area:focus-within {
+            border-color: var(--nd-green);
+            background: #fff;
+        }
+        textarea {
+            border: none !important;
+            background: transparent !important;
+            resize: none;
+            width: 100%;
+            outline: none;
+            font-size: 1.1rem;
+            min-height: 100px;
+        }
+
+        /* 按钮与图标 */
+        .btn-main {
+            background: var(--nd-green);
+            color: white;
+            border-radius: 35px;
+            font-weight: bold;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-main:hover {
+            background: #006b40;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,135,81,0.3);
+        }
+        .icon-btn {
+            color: var(--nd-green);
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1.3rem;
+        }
+        .icon-btn:hover {
+            color: var(--nd-yellow);
+            transform: scale(1.2);
+        }
+
+        /* 结果显示区 */
+        .result-box {
+            background: #eef7f2;
+            border-left: 5px solid var(--nd-green);
+            min-height: 120px;
+            position: relative;
+            /* 防止图标超出容器 */
+            padding-bottom: 40px;
+        }
+
+        /* 底部图标栏 */
+        .action-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+            flex-wrap: wrap; /* 移动端换行 */
+        }
+        .action-item {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #555;
+            cursor: pointer;
+            transition: 0.3s;
+            padding: 10px; /* 增加点击区域 */
+            flex: 1; /* 均分宽度 */
+            min-width: 80px; /* 移动端最小宽度 */
+        }
+        .action-item:hover {
+            color: var(--nd-green);
+        }
+        .action-item i {
+            display: block;
+            font-size: 1.8rem;
+            color: var(--nd-green);
+            margin-bottom: 8px;
+        }
+
+        /* 页脚样式 */
+        footer {
+            background-color: #f8f9fa;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航栏：添加了软件说明、用户设置等按钮 -->
+<nav class="navbar shadow">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- 左侧品牌名称 -->
+        <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-leaf me-2"></i>新疆农大 · 伐词库</span>
+
+        <!-- 右侧功能按钮组 -->
+        <div class="d-flex gap-3">
+            <button class="btn btn-outline-light btn-sm" onclick="showSoftwareInfo()">
+                <i class="fa-solid fa-circle-info me-1"></i>软件说明
+            </button>
+            <button class="btn btn-outline-light btn-sm" onclick="showUserSettings()">
+                <i class="fa-solid fa-gear me-1"></i>用户设置
+            </button>
+            <button class="btn btn-outline-light btn-sm" onclick="showAccountManagement()">
+                <i class="fa-solid fa-user me-1"></i>账号管理
+            </button>
+            <button class="btn btn-outline-light btn-sm" onclick="showFeedback()">
+                <i class="fa-solid fa-comment-dots me-1"></i>问题反馈
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- 轮播图：使用公开网络图片，保证能正常显示 -->
+<div id="mainCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        <div class="carousel-item active" data-bs-interval="4000" style="background-image: url('https://picsum.photos/id/1036/1920/1080');">
+            <div class="carousel-caption d-md-block">
+                <h5>伐词库 · 智慧沟通</h5>
+                <p>消除语言隔阂，服务基层群众</p>
+            </div>
+        </div>
+        <div class="carousel-item" data-bs-interval="4000" style="background-image: url('https://picsum.photos/id/1047/1920/1080');">
+            <div class="carousel-caption d-md-block">
+                <h5>深入基层</h5>
+                <p>让每一份嘱托都能被听懂</p>
+            </div>
+        </div>
+        <div class="carousel-item" data-bs-interval="4000" style="background-image: url('https://picsum.photos/id/1023/1920/1080');">
+            <div class="carousel-caption d-md-block">
+                <h5>科技兴农</h5>
+                <p>新疆农业大学技术支持</p>
+            </div>
+        </div>
+        <div class="carousel-item" data-bs-interval="4000" style="background-image: url('https://picsum.photos/id/1043/1920/1080');">
+            <div class="carousel-caption d-md-block">
+                <h5>助力振兴</h5>
+                <p>用科技守护天山南北的和谐</p>
+            </div>
+        </div>
+    </div>
+    <!-- 轮播图控制按钮 -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<div class="container pb-5">
+    <div class="card main-card p-4">
+        <!-- 语言切换区：增加点击切换功能 -->
+        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+            <span id="sourceLang" class="fw-bold text-success" onclick="switchLang()"><i class="fa-solid fa-language me-2"></i>中文</span>
+            <i class="fa-solid fa-right-left text-muted cursor-pointer" onclick="switchLang()" title="切换翻译方向"></i>
+            <span id="targetLang" class="fw-bold text-success" onclick="switchLang()">维吾尔语</span>
+        </div>
+
+        <div class="input-area shadow-sm">
+            <textarea id="inputText" rows="4" placeholder="请输入要翻译的内容，例如：地力补贴怎么申请？"></textarea>
+            <div class="text-end mt-2">
+                <i class="fa-solid fa-microphone icon-btn me-3" title="语音输入" onclick="voiceInput()"></i>
+                <i class="fa-solid fa-eraser icon-btn" title="清空" onclick="clearInput()"></i>
+            </div>
+        </div>
+
+        <button class="btn btn-main w-100 py-3 mt-4 shadow" onclick="doTranslate()">
+            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>开始翻译
+        </button>
+
+        <div id="resultBox" class="result-box mt-4 p-4 rounded shadow-sm">
+            <div id="resultText" class="fs-5">翻译结果将在此处精准显示...</div>
+            <div class="position-absolute bottom-0 end-0 p-3">
+                <i class="fa-solid fa-volume-high icon-btn me-3" title="语音播报" onclick="voicePlay()"></i>
+                <i class="fa-solid fa-copy icon-btn" title="复制" onclick="copyResult()"></i>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <div class="action-item" onclick="documentTranslate()">
+                <i class="fa-solid fa-file-pdf"></i>文档翻译
+            </div>
+            <div class="action-item" onclick="cameraScan()">
+                <i class="fa-solid fa-camera-retro"></i>拍照识词
+            </div>
+            <div class="action-item" onclick="downloadOfflineDict()">
+                <i class="fa-solid fa-cloud-arrow-down"></i>离线词库
+            </div>
+            <div class="action-item" onclick="openPolicyWiki()">
+                <i class="fa-solid fa-book-open-reader"></i>政策百科
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center text-muted py-4">
+    <p>© 2026 新疆农业大学 · 伐词库团队</p>
+</footer>
+
+<script>
+    // 导航栏按钮交互函数
+    // 软件说明
+    function showSoftwareInfo() {
+        alert('【伐词库 · 智慧中维双语助手】\n\n版本：v1.0.0\n功能：中文↔维吾尔语双向翻译、农业政策文档翻译、离线词库支持\n技术支持：新疆农业大学');
+    }
+    // 用户设置
+    function showUserSettings() {
+        alert('用户设置功能开发中...\n即将支持：语言偏好、语音播报语速、主题切换等');
+    }
+    // 账号管理
+    function showAccountManagement() {
+        alert('账号管理功能开发中...\n即将支持：登录/注册、个人信息修改、权限管理等');
+    }
+    // 问题反馈
+    function showFeedback() {
+        alert('问题反馈方式：\n1. 邮箱：facicu@xjau.edu.cn\n2. 电话：0991-8762123\n3. 校内服务点：行政楼203室');
+    }
+
+    // 翻译方向状态：默认中文→维语
+    let translateDirection = 'zh2uyghur';
+
+    // 语言切换函数
+    function switchLang() {
+        const sourceLang = document.getElementById('sourceLang');
+        const targetLang = document.getElementById('targetLang');
+        const temp = sourceLang.innerHTML;
+        sourceLang.innerHTML = targetLang.innerHTML;
+        targetLang.innerHTML = temp;
+
+        // 切换翻译方向
+        translateDirection = translateDirection === 'zh2uyghur' ? 'uyghur2zh' : 'zh2uyghur';
+    }
+
+    // 清空输入框
+    function clearInput() {
+        document.getElementById('inputText').value = '';
+        document.getElementById('resultText').innerText = '翻译结果将在此处精准显示...';
+    }
+
+    // 语音输入（模拟）
+    function voiceInput() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            // 浏览器支持语音识别的情况
+            const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new Recognition();
+            recognition.lang = translateDirection === 'zh2uyghur' ? 'zh-CN' : 'ug-CN';
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('inputText').value = transcript;
+            };
+
+            recognition.onerror = (event) => {
+                alert('语音识别失败：' + event.error);
+            };
+
+            recognition.start();
+            alert('正在倾听你的语音，请开始说话...');
+        } else {
+            alert('你的浏览器不支持语音识别功能，请升级浏览器后重试');
+        }
+    }
+
+    // 复制结果到剪贴板
+    function copyResult() {
+        const resultText = document.getElementById('resultText').innerText;
+        if (resultText === '翻译结果将在此处精准显示...') {
+            alert('暂无翻译结果可复制');
+            return;
+        }
+
+        navigator.clipboard.writeText(resultText)
+            .then(() => {
+                alert('翻译结果已成功复制到剪贴板！');
+            })
+            .catch(() => {
+                // 降级方案：创建临时输入框复制
+                const textArea = document.createElement('textarea');
+                textArea.value = resultText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('翻译结果已成功复制到剪贴板！');
+            });
+    }
+
+    // 语音播报（模拟）
+    function voicePlay() {
+        const resultText = document.getElementById('resultText').innerText;
+        if (resultText === '翻译结果将在此处精准显示...') {
+            alert('暂无翻译结果可播报');
+            return;
+        }
+
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(resultText);
+            utterance.lang = translateDirection === 'zh2uyghur' ? 'ug-CN' : 'zh-CN';
+            window.speechSynthesis.speak(utterance);
+            alert('正在播报翻译结果...');
+        } else {
+            alert('你的浏览器不支持语音播报功能');
+        }
+    }
+
+    // 辅助功能（模拟）
+    function documentTranslate() {
+        alert('请上传需要翻译的农业/政策文档（支持PDF、Word格式）');
+    }
+
+    function cameraScan() {
+        alert('正在打开高清识图摄像头...\n（需授权摄像头权限）');
+    }
+
+    function downloadOfflineDict() {
+        alert('已进入离线语料包下载界面，当前版本：v1.0.0\n大小：256MB，包含农业政策常用词汇8000+条');
+    }
+
+    function openPolicyWiki() {
+        // 模拟打开政策百科页面
+        if (confirm('是否跳转到新疆农业政策百科页面？')) {
+            window.open('https://www.xjau.edu.cn/zhengce', '_blank');
+        }
+    }
+
+    // 核心翻译函数
+    async function doTranslate() {
+        const text = document.getElementById('inputText').value.trim();
+        if (!text) {
+            alert('请输入要翻译的内容！');
+            return;
+        }
+
+        const resultTextEl = document.getElementById('resultText');
+        resultTextEl.innerHTML = '<div class="spinner-border spinner-border-sm text-success me-2"></div>正在检索伐词库...';
+
+        try {
+            // 模拟接口请求（实际项目中替换为真实接口）
+            // const response = await fetch('/translate', {
+            //     method: 'POST',
+            //     headers: {'Content-Type': 'application/json'},
+            //     body: JSON.stringify({
+            //         text: text,
+            //         direction: translateDirection
+            //     })
+            // });
+            // const data = await response.json();
+
+            // 模拟翻译结果（实际项目中替换为接口返回的data.result）
+            let mockResult = '';
+            if (translateDirection === 'zh2uyghur') {
+                // 中文→维语模拟结果
+                mockResult = text === '地力补贴怎么申请？'
+                    ? '地力补贴 قانداق تاللايسىز؟'
+                    : `【维语翻译结果】：${text}`;
+            } else {
+                // 维语→中文模拟结果
+                mockResult = text === '地力补贴 قانداق تاللايسىز؟'
+                    ? '地力补贴怎么申请？'
+                    : `【中文翻译结果】：${text}`;
+            }
+
+            // 模拟延迟
+            setTimeout(() => {
+                resultTextEl.innerText = mockResult;
+            }, 600);
+        } catch (e) {
+            console.error('翻译请求失败：', e);
+            resultTextEl.innerText = "翻译失败，请检查网络或后端服务状态。";
+        }
+    }
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
