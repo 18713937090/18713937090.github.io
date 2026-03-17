@@ -1,476 +1,429 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>伐词库 - 智慧中维双语助手</title>
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>译路兴村 - 维汉双语普法与乡村治理平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <script>
+        // 配置 Tailwind 主题色
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { light: '#d1fae5', DEFAULT: '#059669', dark: '#064e3b', accent: '#f59e0b' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { 
-            --nd-green: #008751; 
-            --nd-secondary: #28a745;
-            --shadow-light: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-hover: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        body { 
-            background-color: #f8f9fa; 
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* 1. 优化导航栏 */
-        .navbar { 
-            background: linear-gradient(90deg, #008751, #1a7a42); 
-            color: white; 
-            padding: 15px 0; 
-            box-shadow: var(--shadow-light);
-            z-index: 999;
-        }
-        .navbar-brand {
-            font-weight: 700;
-        }
-        .nav-link { 
-            color: rgba(255,255,255,0.85) !important; 
-            font-weight: 500; 
-            margin-left: 15px; 
-            transition: all 0.3s ease;
-        }
-        .nav-link:hover { 
-            color: #fff !important; 
-            transform: translateY(-2px);
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Uyghur:wght@400;700&display=swap');
+        .text-gradient { background: linear-gradient(135deg, #059669 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hover-card { transition: all 0.3s ease; }
+        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(5, 150, 105, 0.1), 0 10px 10px -5px rgba(5, 150, 105, 0.04); }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; }
+        .carousel-item { transition: opacity 1.2s ease-in-out; }
+        .carousel-active { opacity: 1; position: relative; z-index: 10; }
+        .carousel-inactive { opacity: 0; position: absolute; top: 0; left: 0; width: 100%; z-index: 0; }
+        body.lang-uy { font-family: 'Noto Sans Uyghur', sans-serif; direction: rtl; }
 
-        /* 2. 优化轮播图（适配移动端+修复遮罩） */
-        .carousel-item { 
-            height: clamp(300px, 60vh, 480px); /* 响应式高度 */
-            background-size: cover; 
-            background-position: center; 
-            position: relative; /* 确保遮罩层定位正确 */
-        }
-        /* 优化遮罩层：渐变更自然，层级正确 */
-        .carousel-overlay { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
-            z-index: 1; /* 遮罩层在图片上，文字下 */
-        }
-        .carousel-caption { 
-            bottom: 25%; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8); 
-            z-index: 2; /* 文字在最上层 */
-            padding: 0 15px; /* 移动端左右留白 */
-        }
-        /* 响应式文字大小 */
-        .carousel-caption h5 { 
-            font-size: clamp(1.8rem, 5vw, 3.2rem); 
-            font-weight: 800; 
-            letter-spacing: 1px; 
-        }
-        .carousel-caption p { 
-            font-size: clamp(1rem, 2.5vw, 1.5rem); 
-            font-weight: 300; 
-            opacity: 0.9; 
-        }
-
-        /* 翻译主卡片 */
-        .main-card { 
-            border: none; 
-            border-radius: 20px; 
-            box-shadow: var(--shadow-light); 
-            margin-top: -60px; 
-            z-index: 100; 
-            position: relative; 
-            background: #fff;
-            transition: box-shadow 0.3s ease;
-        }
-        .main-card:hover {
-            box-shadow: var(--shadow-hover);
-        }
-        .input-area { 
-            border: 1px solid #e0e0e0; 
-            border-radius: 12px; 
-            padding: 15px; 
-            background: #fdfdfd;
-            transition: border-color 0.3s ease;
-        }
-        .input-area:focus-within {
-            border-color: var(--nd-secondary);
-        }
-        textarea { 
-            border: none !important; 
-            background: transparent !important; 
-            resize: none; 
-            width: 100%; 
-            outline: none; 
-            font-size: 1.1rem;
-            min-height: 80px;
-        }
-        .btn-main { 
-            background: var(--nd-green); 
-            color: white; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            border: none;
-            padding: 12px 0;
-            transition: all 0.3s ease;
-        }
-        .btn-main:hover { 
-            background: #006b40;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,135,81,0.3);
-        }
-        .btn-main:active {
-            transform: translateY(0);
-        }
-        
-        .action-bar { 
-            border-top: 1px dashed #ddd; 
-            margin-top: 25px; 
-            padding-top: 20px; 
-        }
-        .action-item { 
-            cursor: pointer; 
-            color: #555; 
-            transition: all 0.3s ease;
-            padding: 10px 0;
-        }
-        .action-item:hover { 
-            color: var(--nd-green); 
-            transform: translateY(-3px); 
-        }
-
-        /* 3. 项目数据看板样式 */
-        .stats-section { 
-            padding: 50px 0; 
-            margin-top: 30px;
-        }
-        .stat-box { 
-            text-align: center; 
-            padding: 20px; 
-            transition: transform 0.3s ease;
-        }
-        .stat-box:hover {
-            transform: translateY(-5px);
-        }
-        .stat-num { 
-            font-size: clamp(1.8rem, 4vw, 2.5rem); 
-            font-weight: 900; 
-            color: var(--nd-green); 
-            margin-bottom: 5px; 
-        }
-        .stat-text { 
-            color: #6c757d; 
-            font-size: 1rem; 
-        }
-
-        /* 4. 核心优势卡片 */
-        .feature-card { 
-            border: none; 
-            border-radius: 15px; 
-            transition: all 0.3s ease; 
-            background: #fff;
-            height: 100%;
-        }
-        .feature-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: var(--shadow-hover); 
-        }
-        .feature-icon { 
-            width: 60px; 
-            height: 60px; 
-            background: #e8f5e9; 
-            color: var(--nd-green); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.5rem; 
-            margin-bottom: 15px;
-            transition: background-color 0.3s ease;
-        }
-        .feature-card:hover .feature-icon {
-            background-color: #d4edda;
-        }
-
-        /* 5. 结果框优化 */
-        #resultBox {
-            background: #f4f9f5; 
-            min-height: 100px; 
-            border-left: 4px solid var(--nd-green);
-            transition: all 0.3s ease;
-        }
-        #resultBox.empty {
-            color: #999;
-        }
-        #resultBox.loading {
-            color: var(--nd-green);
-        }
-
-        /* 6. 页脚优化 */
-        footer {
-            margin-top: 50px;
-            padding: 20px 0;
-            background-color: #212529;
-            color: #fff;
-        }
+        /* 隐藏滚动条但允许滚动（用于弹窗内的聊天界面等） */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body :class="['bg-gray-50 text-gray-800 font-sans antialiased', currentLang === 'uy' ? 'lang-uy' : '']">
 
-<nav class="navbar navbar-expand-lg sticky-top">
-    <div class="container">
-        <a class="navbar-brand h1 mb-0 fs-4" href="#"><i class="fa-solid fa-leaf me-2"></i>新疆农大 · 伐词库</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon text-white"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('进入软件使用指南\n\n1. 输入需要翻译的中文内容\n2. 点击一键智能翻译按钮\n3. 支持文档翻译、拍照识词等扩展功能\n4. 离线环境下可使用基础翻译功能')"><i class="fa-solid fa-circle-info me-1"></i>软件说明</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('打开用户设置面板\n\n可设置：\n1. 翻译结果字体大小\n2. 语音播报音量\n3. 默认翻译方向\n4. 离线模式开关')"><i class="fa-solid fa-gear me-1"></i>用户设置</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('进入账号管理页\n\n1. 登录/注册账号\n2. 绑定手机号\n3. 查看使用记录\n4. 会员权益说明')"><i class="fa-solid fa-user me-1"></i>账号管理</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('感谢您的反馈！\n\n反馈渠道：\n1. 客服微信：xnnd-faciku\n2. 邮箱：faciku@xauat.edu.cn\n3. 意见反馈表单')"><i class="fa-solid fa-comment-dots me-1"></i>问题反馈</a></li>
-            </ul>
+<div id="app">
+    {% raw %}
+    <nav class="fixed w-full bg-white/95 backdrop-blur-md shadow-sm z-50 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-extrabold text-brand tracking-tight">⚖️ {{ t('navBrand') }}</span>
+            </div>
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#hero" class="text-gray-600 hover:text-brand font-medium transition">{{ t('navHome') }}</a>
+                <a href="#painpoints" class="text-gray-600 hover:text-brand font-medium transition">{{ t('navData') }}</a>
+                <a href="#personas" class="text-gray-600 hover:text-brand font-medium transition">{{ t('navPersonas') }}</a>
+                <a href="#dashboard" class="text-gray-600 hover:text-brand font-medium transition">{{ t('navDashboard') }}</a>
+                <div class="h-6 w-px bg-gray-200 mx-2"></div>
+                <button class="text-gray-500 hover:text-brand transition flex items-center gap-1" title="联系客服">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <span class="text-sm font-medium">{{ t('navSupport') }}</span>
+                </button>
+                <button @click="toggleLang" class="bg-gradient-to-r from-brand to-brand-accent p-[2px] rounded-lg shadow-md hover:shadow-lg transition">
+                    <div class="bg-white px-4 py-1.5 rounded-md text-brand font-bold">{{ currentLang === 'zh' ? 'ئۇيغۇرچە' : '切换汉语' }}</div>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section id="hero" class="pt-16 bg-brand-dark overflow-hidden relative h-[90vh]">
+        <div class="absolute inset-0 z-10 bg-gradient-to-b from-brand-dark/80 via-brand-dark/50 to-brand-dark/90"></div>
+        <div class="absolute inset-0 z-0">
+            <img v-for="(image, index) in carouselImages" :key="index" :src="image" :class="['w-full h-full object-cover carousel-item', index === currentCarouselIndex ? 'carousel-active' : 'carousel-inactive']" />
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-20 h-full flex flex-col justify-center items-center">
+            <div class="inline-block mb-4 px-4 py-1 rounded-full bg-brand-accent/20 border border-brand-accent/50 text-brand-accent font-semibold tracking-widest text-sm backdrop-blur-sm">{{ t('heroTag') }}</div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6 drop-shadow-lg">
+                {{ t('heroTitle1') }}<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-light to-brand-accent">{{ t('heroTitle2') }}</span>
+            </h1>
+            <p class="mt-4 text-xl text-gray-200 max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow-md">{{ t('heroSubtitle') }}</p>
+            <div class="flex justify-center gap-6">
+                <a href="#personas" class="bg-brand text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-emerald-500 shadow-[0_0_20px_rgba(5,150,105,0.4)] transition">{{ t('heroCTA1') }}</a>
+                <a href="#dashboard" class="bg-white/10 text-white border border-white/30 px-8 py-4 rounded-lg text-lg font-bold hover:bg-white/20 backdrop-blur-sm transition">{{ t('heroCTA2') }}</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="painpoints" class="py-20 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-extrabold text-gray-900">{{ t('painpointsTitle') }}</h2>
+                <p class="mt-4 text-gray-500 max-w-2xl mx-auto">{{ t('painpointsSub') }}</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-brand/5 hover-card">
+                        <div class="flex items-end gap-4 mb-4">
+                            <h3 class="text-6xl font-black text-brand">{{ t('statPain1Value') }}</h3>
+                            <div class="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm font-bold mb-2">高频痛点</div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800 mb-2">{{ t('statPain1Label') }}</p>
+                        <p class="text-gray-500 leading-relaxed">{{ t('statPain1Desc') }}</p>
+                        <div class="mt-6 w-full bg-gray-100 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-brand to-brand-accent h-2.5 rounded-full" style="width: 72.06%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-brand/5 hover-card">
+                        <div class="flex items-end gap-4 mb-4"><h3 class="text-6xl font-black text-brand-accent">{{ t('statPain2Value') }}</h3></div>
+                        <p class="text-2xl font-bold text-gray-800 mb-2">{{ t('statPain2Label') }}</p>
+                        <p class="text-gray-500 leading-relaxed">{{ t('statPain2Desc') }}</p>
+                        <div class="mt-6 w-full bg-gray-100 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-brand-accent to-red-400 h-2.5 rounded-full" style="width: 57.72%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-7 bg-white rounded-2xl border border-gray-100 p-6 shadow-2xl shadow-brand/10 relative">
+                    <div id="chart-pain" class="h-[500px] w-full mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="personas" class="py-20 bg-gray-50 border-y border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-brand font-bold tracking-wider uppercase text-sm mb-2 block">AI Algorithm</span>
+                <h2 class="text-4xl font-extrabold text-gray-900 mb-4">{{ t('personasTitle') }}</h2>
+                <p class="text-gray-500">{{ t('personasSubtitle') }}</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4 mb-12 bg-white p-2 rounded-2xl shadow-sm inline-flex mx-auto border border-gray-100">
+                <button v-for="persona in personas" :key="persona.id" @click="activePersona = persona"
+                    :class="['px-8 py-3 rounded-xl font-bold transition-all duration-300', activePersona.id === persona.id ? 'bg-brand text-white shadow-lg shadow-brand/30' : 'text-gray-500 hover:bg-gray-50']">
+                    {{ persona.role }}
+                </button>
+            </div>
+
+            <div class="bg-brand-light/40 border border-brand-light p-5 mb-10 rounded-xl text-brand-dark flex items-start gap-4 max-w-4xl mx-auto shadow-sm">
+                <svg class="w-6 h-6 flex-shrink-0 text-brand mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div>
+                    <strong class="block mb-1">{{ t('personaAnalysisLabel') }}</strong>
+                    <span class="text-gray-600 leading-relaxed">{{ activePersona.description }}</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 transition-all duration-500">
+                <div v-for="(feature, index) in sortedFeatures" :key="feature.name" @click="openModal(feature.name)"
+                    :class="['cursor-pointer bg-white p-6 rounded-2xl border transition-all duration-500 flex flex-col items-center text-center hover:shadow-2xl hover:-translate-y-2', index < 2 ? 'border-brand ring-4 ring-brand/10 scale-105 shadow-xl shadow-brand/10 z-10' : 'border-gray-100 hover:border-brand-light opacity-80 hover:opacity-100']">
+                    <div v-if="index < 2" class="bg-brand-accent text-white text-xs font-bold px-3 py-1 rounded-full mb-4 shadow-sm">{{ t('featureRecommended') }} ({{ feature.weight }})</div>
+                    <div v-else class="text-xs font-semibold text-gray-400 mb-4 bg-gray-50 px-3 py-1 rounded-full">{{ t('featureWeight') }}: {{ feature.weight }}</div>
+                    <div class="text-5xl mb-4 bg-gray-50 p-4 rounded-full">{{ feature.icon }}</div>
+                    <h3 class="text-lg font-bold text-gray-800">{{ feature.name }}</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="dashboard" class="py-24 bg-brand-dark text-white relative overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand/30 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <h2 class="text-4xl font-extrabold text-center mb-16 tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">{{ t('dashboardTitle') }}</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-bold mb-4 text-emerald-300">{{ t('chartRegionTitle') }}</h3>
+                    <div id="chart-region" class="h-64 w-full"></div>
+                </div>
+                <div class="glass-panel p-8 flex flex-col justify-center items-center text-center">
+                    <h3 class="text-2xl font-bold mb-6 text-white z-10">{{ t('modelTitle') }}</h3>
+                    <div class="bg-black/30 p-6 rounded-xl font-mono text-sm leading-loose mb-6 w-full text-emerald-100 z-10 border border-emerald-900/50">
+                        E = Σ (Price_k × P_k)<br/>E = (5×0.304) + (20×0.315) + (40×0.244)<br/>
+                        <div class="mt-4 pt-4 border-t border-emerald-800/50"><strong class="text-3xl text-brand-accent">E ≈ 17.58 元</strong></div>
+                    </div>
+                </div>
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-bold mb-6 text-emerald-300">{{ t('taizhangTitle') }}</h3>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between items-center bg-white/5 p-3 rounded-lg"><span class="bg-brand-accent/20 text-brand-accent px-2.5 py-1 rounded text-xs font-bold">土地流转</span><span class="text-sm text-gray-300">莎车县 · 刚刚</span></li>
+                        <li class="flex justify-between items-center bg-white/5 p-3 rounded-lg"><span class="bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded text-xs font-bold">婚姻家庭</span><span class="text-sm text-gray-300">温宿县 · 15分钟前</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="business" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center mb-16 text-gray-900">{{ t('businessTitle') }}</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="flex flex-col items-center w-full px-8">
+                    <div class="w-1/2 bg-gradient-to-r from-brand-accent to-yellow-400 text-white text-center py-5 rounded-t-2xl font-bold shadow-lg z-30 relative">{{ t('bizLevel3') }}</div>
+                    <div class="w-3/4 bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-center py-6 border-t border-white/20 font-bold shadow-lg z-20 relative -mt-2">{{ t('bizLevel2') }}</div>
+                    <div class="w-full bg-gradient-to-r from-emerald-800 to-brand text-white text-center py-8 rounded-b-2xl border-t border-white/20 font-bold shadow-xl z-10 relative -mt-2">{{ t('bizLevel1') }}</div>
+                </div>
+                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 shadow-inner">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">{{ t('chartFinanceTitle') }}</h3>
+                    <div id="chart-finance" class="h-80 w-full"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div v-if="activeModalData" class="fixed inset-0 z-[100] flex items-center justify-center bg-brand-dark/80 backdrop-blur-sm transition-opacity p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+
+            <div class="px-6 py-4 flex justify-between items-center text-white" :class="activeModalData.headerClass">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">{{ activeModalData.icon }}</span>
+                    <h3 class="text-xl font-bold tracking-wider">{{ activeModalData.title }} <span class="text-xs bg-white/20 px-2 py-1 rounded ml-2">App端演示</span></h3>
+                </div>
+                <button @click="closeModal" class="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-full transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto no-scrollbar flex-1 bg-gray-50">
+
+                <div v-if="activeModalData.id === 'search'">
+                    <div class="flex gap-4 mb-6">
+                        <input type="text" value="土地流转合同怎么写？" class="w-full pl-6 pr-4 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand outline-none text-lg shadow-sm" readonly>
+                        <button class="bg-brand text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-emerald-700 shadow-md">检索</button>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">匹配法条</h4>
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm border-l-4 border-l-brand">
+                            <h5 class="text-lg font-bold text-gray-800 mb-2">《农村土地承包法》第三十六条</h5>
+                            <p class="text-gray-600 mb-4">承包方可以自主决定依法采取出租（打租）、入股或者其他方式向他人流转土地经营权，并向发包方备案。</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="font-['Noto_Sans_Uyghur'] text-right text-lg text-brand-dark" dir="rtl">ھۆددىگە ئالغۇچى قانۇن بويىچە ئىجارىگە بېرىش، پاي قوشۇش ياكى باشقا ئۇسۇللار بىلەن يەر ئىگىلىك ھوقۇقىنى باشقىلارغا ئۆتۈنۈپ بېرىشنى ئۆز ئالدىغا قارار قىلسا بولىدۇ...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="activeModalData.id === 'translate'">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+                            <div class="flex justify-between text-sm text-gray-500 font-bold mb-2 pb-2 border-b"><span>中文 (简体)</span></div>
+                            <textarea class="w-full h-48 outline-none resize-none text-lg text-gray-700" readonly>由于不可抗力导致本合同无法履行的，双方均不承担违约责任。</textarea>
+                        </div>
+                        <div class="bg-brand-light/30 p-4 rounded-xl border border-brand-light shadow-sm flex flex-col relative">
+                            <div class="flex justify-between text-sm text-brand font-bold mb-2 pb-2 border-b border-brand/20"><span>ئۇيغۇرچە (Uyghur)</span><span class="bg-brand text-white text-[10px] px-2 py-0.5 rounded">AI精翻</span></div>
+                            <textarea class="w-full h-48 outline-none resize-none text-xl text-brand-dark bg-transparent font-['Noto_Sans_Uyghur']" dir="rtl" readonly>يەڭگىلى بولمايدىغان كۈچ سەۋەبىدىن بۇ توختامنى ئىجرا قىلىش مۇمكىن بولمىسا، ئىككى تەرەپ توختامغا خىلاپلىق قىلىش جاۋابكارلىقىنى ئۈستىگە ئالمايدۇ.</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="activeModalData.id === 'consult'">
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-[60vh]">
+                        <div class="bg-gray-100 px-4 py-3 border-b flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">阿</div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">阿不都·热合曼 律师</h4>
+                                <p class="text-xs text-green-600">● 当前在线 (精通维汉双语)</p>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4 space-y-4 overflow-y-auto bg-gray-50">
+                            <div class="flex justify-end gap-3">
+                                <div class="bg-brand text-white p-3 rounded-l-xl rounded-br-xl max-w-[80%] shadow-sm">
+                                    <p>律师您好，我家承包的果园被村里修路占了，村里只给了一点青苗费，这合法吗？我该怎么维权？</p>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">我</div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs">阿</div>
+                                <div class="bg-white border border-gray-200 p-3 rounded-r-xl rounded-bl-xl max-w-[80%] shadow-sm">
+                                    <p class="text-gray-800 mb-2">老乡您好！根据《土地管理法》，除了青苗费，您还有权要求土地补偿费和安置补助费。您可以先向乡政府土地管理所反映。</p>
+                                    <hr class="my-2 border-gray-100">
+                                    <p class="font-['Noto_Sans_Uyghur'] text-right text-gray-600" dir="rtl">ياخشىمۇسىز يۇرتداش! «يەر باشقۇرۇش قانۇنى» غا ئاساسەن، كۆك مايسا ھەققىدىن باشقا، يەر تولۇقلىما پۇلى ۋە ئورۇنلاشتۇرۇش ياردەم پۇلى تەلەپ قىلىش ھوقۇقىڭىز بار...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="activeModalData.id === 'case'">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 hover-card cursor-pointer border-t-4 border-t-red-500">
+                            <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-bold mb-3 inline-block">婚姻家庭</span>
+                            <h4 class="font-bold text-lg mb-2">未办理结婚登记，彩礼该不该退？</h4>
+                            <p class="text-gray-500 text-sm mb-4 line-clamp-2">男方给付女方10万元彩礼后，双方因感情不和分手，未办理结婚登记。男方起诉要求退还...</p>
+                            <div class="text-brand text-sm font-bold flex items-center gap-1">查看双语解析 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 hover-card cursor-pointer border-t-4 border-t-yellow-500">
+                            <span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-bold mb-3 inline-block">土地纠纷</span>
+                            <h4 class="font-bold text-lg mb-2">口头协议流转土地，如今反悔怎么办？</h4>
+                            <p class="text-gray-500 text-sm mb-4 line-clamp-2">村民王某将5亩地口头租给李某种棉花，如今棉花价格上涨，王某要求收回土地...</p>
+                            <div class="text-brand text-sm font-bold flex items-center gap-1">查看双语解析 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="activeModalData.id === 'tool'">
+                    <h4 class="font-bold text-gray-700 mb-4">常用法律文书双语模板下载 (一键生成)</h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center hover:border-brand transition">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-blue-100 p-2 rounded-lg text-blue-600"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg></div>
+                                <div><h5 class="font-bold text-gray-800">农村土地经营权流转合同</h5><p class="text-xs text-gray-500">汉维双语标准版 · 适合村委会备案</p></div>
+                            </div>
+                            <button class="bg-brand-light text-brand px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand hover:text-white transition">生成模板</button>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center hover:border-brand transition">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-blue-100 p-2 rounded-lg text-blue-600"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg></div>
+                                <div><h5 class="font-bold text-gray-800">民间借款欠条/借条范本</h5><p class="text-xs text-gray-500">汉维双语标准版 · 防范金融纠纷</p></div>
+                            </div>
+                            <button class="bg-brand-light text-brand px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand hover:text-white transition">生成模板</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
-</nav>
-
-<!-- 替换轮播图图片地址为GitHub公开链接 -->
-<div id="mainCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
-    <div class="carousel-inner">
-        <div class="carousel-item active" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner1.jpg.jpg');">
-            <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>深入基层</h5>
-                <p>让每一份嘱托都能被听懂</p>
-            </div>
+    <footer class="bg-brand-dark border-t border-emerald-900 text-emerald-200/60 py-10 text-center">
+        <div class="max-w-7xl mx-auto flex flex-col items-center">
+            <span class="text-3xl font-bold text-white mb-4 opacity-80">⚖️</span>
+            <p>{{ t('footerText') }} © 2026</p>
         </div>
-        <div class="carousel-item" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner2.jpg.webp');">
-            <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>科技兴农</h5>
-                <p>新疆农业大学技术支持</p>
-            </div>
-        </div>
-        <div class="carousel-item" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner3.jpg.webp');">
-            <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>海量词库</h5>
-                <p>专为农业与基层工作打造</p>
-            </div>
-        </div>
-        <div class="carousel-item" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner4.jpg.jpg');">
-            <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>双语桥梁</h5>
-                <p>连接语言，耕耘梦想</p>
-            </div>
-        </div>
-    </div>
-    <!-- 移动端显示轮播控制按钮 -->
-    <button class="carousel-control-prev d-md-block" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next d-md-block" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
+    </footer>
+    {% endraw %}
 </div>
-
-<div class="container pb-4">
-    <div class="card main-card p-4 mx-auto" style="max-width: 900px;">
-        <div class="d-flex justify-content-between mb-3 px-2">
-            <span class="fw-bold text-success">中文 (简体)</span>
-            <i class="fa-solid fa-arrow-right-arrow-left text-muted"></i>
-            <span class="fw-bold text-success">维吾尔语 (Uyghur)</span>
-        </div>
-
-        <div class="input-area mb-3">
-            <textarea id="inputText" rows="3" placeholder="请输入要翻译的内容，例如：地力补贴怎么申请？"></textarea>
-        </div>
-
-        <button class="btn btn-main w-100 py-2 shadow-sm fs-5" onclick="doTranslate()">
-            <i class="fa-solid fa-language me-2"></i>一键智能翻译
-        </button>
-
-        <div id="resultBox" class="mt-4 p-3 rounded empty">
-            <div id="resultText" class="fs-5 text-dark">翻译结果将在此显示...</div>
-            <div class="text-end mt-2">
-                <i class="fa-solid fa-volume-high me-3 text-success" style="cursor:pointer;" onclick="playResult()"></i>
-                <i class="fa-solid fa-copy text-success" style="cursor:pointer;" onclick="copyResult()"></i>
-            </div>
-        </div>
-
-        <div class="action-bar d-flex justify-content-around text-center flex-wrap">
-            <div class="action-item col-3 mb-2"><i class="fa-solid fa-file-word fs-3 d-block mb-1 text-success"></i>文档翻译</div>
-            <div class="action-item col-3 mb-2"><i class="fa-solid fa-camera-viewfinder fs-3 d-block mb-1 text-success"></i>拍照识词</div>
-            <div class="action-item col-3 mb-2"><i class="fa-solid fa-cloud-arrow-down fs-3 d-block mb-1 text-success"></i>离线包</div>
-            <div class="action-item col-3 mb-2"><i class="fa-solid fa-book-journal-whills fs-3 d-block mb-1 text-success"></i>政策库</div>
-        </div>
-    </div>
-</div>
-
-<div class="container stats-section border-top">
-    <div class="row text-center">
-        <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">15W+</div>
-                <div class="stat-text">农业专业词条</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">98.5%</div>
-                <div class="stat-text">翻译准确率</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">0 ms</div>
-                <div class="stat-text">离线响应延迟</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">120+</div>
-                <div class="stat-text">服务村镇数量</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container pb-5">
-    <div class="text-center mb-4">
-        <h4 class="fw-bold text-success">系统核心优势</h4>
-        <p class="text-muted">专为新疆基层工作场景量身定制</p>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 shadow-sm">
-                <div class="feature-icon"><i class="fa-solid fa-wifi"></i></div>
-                <h5 class="fw-bold">纯离线引擎</h5>
-                <p class="text-muted mb-0">针对偏远乡村无网、弱网环境，自研轻量级离线翻译模型，随时随地可用。</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 shadow-sm">
-                <div class="feature-icon"><i class="fa-solid fa-seedling"></i></div>
-                <h5 class="fw-bold">农大权威语料</h5>
-                <p class="text-muted mb-0">依托新疆农业大学专家智库，对农业技术、惠农政策等垂直领域进行深度微调。</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 shadow-sm">
-                <div class="feature-icon"><i class="fa-solid fa-ear-listen"></i></div>
-                <h5 class="fw-bold">方言口音适配</h5>
-                <p class="text-muted mb-0">优化了针对基层群众的口语化表达和语音识别，让沟通不再局限于书面语。</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<footer class="text-center bg-dark text-light py-4 mt-auto">
-    <p class="mb-0">© 2026 新疆农业大学 · 伐词库团队 版权所有</p>
-    <small class="text-muted mt-1 d-block">本系统仅用于基层农业工作沟通辅助，禁止商用</small>
-</footer>
 
 <script>
-    // 翻译核心函数（优化交互体验）
-    async function doTranslate() {
-        const inputText = document.getElementById('inputText').value.trim();
-        const resultBox = document.getElementById('resultBox');
-        const resultText = document.getElementById('resultText');
-        
-        // 输入为空提示
-        if (!inputText) {
-            resultBox.classList.add('empty');
-            resultText.innerText = "请输入需要翻译的内容后再尝试！";
-            alert("温馨提示：请先输入要翻译的中文内容，例如“地力补贴怎么申请？”");
-            return;
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    // ... [之前的 locales 字典代码完全保持不变，为节省字数这里不重复展开，请保留你上一次代码中的 locales 对象] ...
+    const locales = {
+        'zh': {
+            'navBrand': '译路兴村', 'navHome': '项目首页', 'navData': '数据洞察', 'navPersonas': '算法模型', 'navDashboard': '政务大屏', 'navSupport': '联系客服',
+            'heroTag': '挑战杯优秀入围项目', 'heroTitle1': '打破语言壁垒，让法治阳光', 'heroTitle2': '照亮新疆乡村每一个角落', 'heroSubtitle': '专为新疆乡村打造的数字化法治服务平台，集双语普法、智能咨询、基层治理赋能于一体。', 'heroCTA1': '体验千人千面推荐', 'heroCTA2': '进入治理数据看板',
+            'painpointsTitle': '实地调研：直击乡村法治痛点', 'painpointsSub': '基于全疆536份有效问卷数据的深度量化分析，揭示真实的供需矛盾。', 'statPain1Value': '72.0%', 'statPain1Label': '存在语言沟通障碍', 'statPain1Desc': '语言壁垒是法治服务最根本的障碍，导致传统单一普法效果大打折扣。', 'statPain2Value': '57.7%', 'statPain2Label': '遭遇问题无有效解决途径', 'statPain2Desc': '群众面临“找不到、请不起、信不过”专业法律服务的困境。',
+            'personasTitle': '“千人千面”动态权重推荐系统', 'personasSubtitle': '基于多维度用户特征，动态计算功能权重，实现精准的法治服务分发。', 'personaAnalysisLabel': '画像洞察：', 'featureRecommended': '核心推荐', 'featureWeight': '算法权重',
+            'role干部': '乡村基层干部', 'role村民': '普通村民', 'role个体户': '个体经营者', 'role法律人': '法律服务者', 'personaDescA': '重治理、强刚需，高度依赖权威法律条文与具体治理手段。',
+            'dashboardTitle': '译路兴村·基层治理数字化指挥中心', 'statDash1Label': '普惠服务均价测算', 'statDash1Value': '¥ 20', 'statDash2Label': '单次服务模型期望', 'statDash2Value': '¥ 17.58', 'statDash3Label': '核心试点区域占比', 'statDash3Value': '42.2%', 'statDash4Label': 'B端核心赋能价值', 'statDash4Value': '数据辅助决策', 'chartRegionTitle': '全疆试点法治需求热度分布', 'modelTitle': '收益优化演算法则', 'taizhangTitle': '全疆纠纷调解实时汇聚节点',
+            'businessTitle': '可持续的商业闭环与财务预测', 'bizLevel1': '第一级 (基石)：免费工具打底，构建百万级高频流量池', 'bizLevel2': '第二级 (造血)：普惠定价增值服务，政府购买与精准推送', 'bizLevel3': '第三级 (护城河)：沉淀涉农法治大数据，律师案源导流分成', 'chartFinanceTitle': '三年期营收增长曲线 (万)', 'chartFinanceStage1': 'Y1', 'chartFinanceStage2': 'Y2', 'chartFinanceStage3': 'Y3', 'footerText': '第二十届“挑战杯”竞赛展示专用'
+        },
+        'uy': {
+            'navBrand': 'يىلۇ شىڭسۈن', 'navHome': 'باش بەت', 'navData': 'سانلىق مەلۇمات', 'navPersonas': 'ئالگورىزىم', 'navDashboard': 'چوڭ ئېكران', 'navSupport': 'مۇلازىمەت',
+            'heroTag': 'مۇنەۋۋەر تۈر كۆرگەزمىسى', 'heroTitle1': 'تىل توسالغۇسىنى بۇزۇپ تاشلاپ ،', 'heroTitle2': 'قانۇنچىلىق نۇرىنى شىنجاڭغا يەتكۈزەيلى', 'heroSubtitle': 'مەخسۇس شىنجاڭ يېزىلىرى ئۈچۈن بەرپا قىلىنغان رەقەملىك قانۇنچىلىق مۇلازىمەت سۇپىسى.', 'heroCTA1': 'سىناپ بېقىڭ', 'heroCTA2': 'سانلىق مەلۇماتنى كۆرۈڭ',
+            'painpointsTitle': 'تەكشۈرۈش: يېزا قانۇنچىلىق ئاغرىق نۇقتىلىرى', 'painpointsSub': '536 پارچە ئۈنۈملۈك سۈرۈشتۈرۈش قەغىزىگە ئاساسەن تەھلىل قىلىش.', 'statPain1Value': '72.0%', 'statPain1Label': 'تىل ئالاقە توسالغۇسى بار', 'statPain1Desc': 'تىل توسالغۇسى قانۇن مۇلازىمىتىدىكى ئەڭ ئاساسلىق توسالغۇ.', 'statPain2Value': '57.7%', 'statPain2Label': 'ھەل قىلىش چارىسى يوق', 'statPain2Desc': 'كەسپىي قانۇن مۇلازىمىتىگە ئېرىشىش قىيىن.',
+            'personasTitle': 'دىنامىك ئېغىرلىق تەۋسىيە سىستېمىسى', 'personasSubtitle': 'ئابونتلارنىڭ ئالاھىدىلىكىگە ئاساسەن ئىقتىدارلارنى تەۋسىيە قىلىدۇ.', 'personaAnalysisLabel': 'ئانالىز:', 'featureRecommended': 'تەۋسىيە قىلىنىدۇ', 'featureWeight': 'ئېغىرلىق',
+            'role干部': 'كەنت كادىرى', 'role村民': 'كەنت ئاھالىسى', 'role个体户': 'تىجارەتچى', 'role法律人': 'قانۇنچى', 'personaDescA': 'قانۇن ماددىلىرى ۋە باشقۇرۇش ۋاسىتىلىرىگە تايىنىدۇ.',
+            'dashboardTitle': 'رەقەملىك قوماندانلىق مەركىزى', 'statDash1Label': 'ئوتتۇرىچە باھا', 'statDash1Value': '¥ 20', 'statDash2Label': 'مۆلچەردىكى كىرىم', 'statDash2Value': '¥ 17.58', 'statDash3Label': 'يادرولۇق رايون', 'statDash3Value': '42.2%', 'statDash4Label': 'يادرولۇق قىممەت', 'statDash4Value': 'قارار چىقىرىشقا ياردەم', 'chartRegionTitle': 'قانۇنچىلىق ئېھتىياجى', 'modelTitle': 'پايدا ئالگورىزىمى', 'taizhangTitle': 'رېئال ۋاقىتتىكى مۇرەسسە خاتىرىسى',
+            'businessTitle': 'سودا ئەندىزىسى ۋە مالىيە مۆلچەرى', 'bizLevel1': 'بىرىنچى دەرىجە: ھەقسىز قوراللار', 'bizLevel2': 'ئىككىنچى دەرىجە: قىممەت قوشۇلغان مۇلازىمەت', 'bizLevel3': 'ئۈچىنچى دەرىجە: چوڭ سانلىق مەلۇمات', 'chartFinanceTitle': 'ئۈچ يىللىق كىرىم ئەگرى سىزىقى', 'chartFinanceStage1': 'Y1', 'chartFinanceStage2': 'Y2', 'chartFinanceStage3': 'Y3', 'footerText': 'كۆرگەزمىسى ئۈچۈنلا'
         }
+    };
 
-        // 显示加载状态
-        resultBox.classList.remove('empty');
-        resultBox.classList.add('loading');
-        resultText.innerHTML = '<div class="d-flex align-items-center justify-content-center"><div class="spinner-border spinner-border-sm text-success me-2"></div>正在智能翻译中...</div>';
+    createApp({
+        setup() {
+            const currentLang = ref('zh');
+            const t = (key) => locales[currentLang.value][key] || key;
+            const toggleLang = () => { currentLang.value = currentLang.value === 'zh' ? 'uy' : 'zh'; updateCharts(); };
 
-        try {
-            // 模拟翻译请求（适配GitHub Pages无后端环境）
-            // 实际部署后端后，可替换为真实的fetch请求
-            // const response = await fetch('/translate', {
-            //     method: 'POST',
-            //     headers: {'Content-Type': 'application/json'},
-            //     body: JSON.stringify({ text: inputText })
-            // });
-            // const data = await response.json();
-            
-            // 模拟翻译延迟（更真实的体验）
-            setTimeout(() => {
-                // 模拟翻译结果（实际项目中替换为真实返回值）
-                const mockResult = `【维吾尔语翻译结果】：${inputText} (Uyghur translation: ${inputText})`;
-                resultBox.classList.remove('loading');
-                resultText.innerText = mockResult;
-            }, 800);
-            
-        } catch (e) {
-            // 友好的错误提示（适配离线/无后端场景）
-            resultBox.classList.remove('loading');
-            resultText.innerText = "⚠️ 翻译请求失败！\n1. 若使用离线模式，请确保已下载离线包\n2. 若使用在线模式，请检查网络连接\n3. 可切换至本地翻译引擎重试";
-            console.error('翻译错误：', e);
+            const carouselImages = ref([
+                'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=2000',
+                'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=2000',
+                'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000'
+            ]);
+            const currentCarouselIndex = ref(0);
+            onMounted(() => { setInterval(() => { currentCarouselIndex.value = (currentCarouselIndex.value + 1) % carouselImages.value.length; }, 5000); });
+
+            const personas = computed(() => [
+                { id: 'A', role: t('role干部'), description: t('personaDescA'), weights: { '双语查询': 0.667, '智能翻译': 0.638, '在线咨询': 0.590, '案例解析': 0.590, '法治工具': 0.514 } },
+                { id: 'B', role: t('role村民'), description: '需求偏向基础生活纠纷与常识获取。', weights: { '智能翻译': 0.627, '双语查询': 0.555, '法治工具': 0.509, '在线咨询': 0.482, '案例解析': 0.482 } },
+                { id: 'C', role: t('role个体户'), description: '面临跨民族语言沟通障碍与经营风险规避需求。', weights: { '法治工具': 0.630, '智能翻译': 0.630, '案例解析': 0.593, '双语查询': 0.556, '在线咨询': 0.556 } },
+                { id: 'D', role: t('role法律人'), description: '核心工作流程包括解答咨询和处理翻译需求。', weights: { '双语查询': 0.688, '在线咨询': 0.625, '智能翻译': 0.625, '案例解析': 0.550, '法治工具': 0.475 } }
+            ]);
+
+            const activePersonaRaw = ref(null);
+            const activePersona = computed({ get: () => activePersonaRaw.value || personas.value[0], set: (val) => activePersonaRaw.value = val });
+
+            const baseFeatures = [{ name: '双语查询', icon: '🔍' }, { name: '智能翻译', icon: '🗣️' }, { name: '在线咨询', icon: '💬' }, { name: '案例解析', icon: '📖' }, { name: '法治工具', icon: '🛠️' }];
+            const sortedFeatures = computed(() => {
+                const w = activePersona.value.weights;
+                return baseFeatures.map(f => ({ ...f, weight: w[f.name] })).sort((a, b) => b.weight - a.weight);
+            });
+
+            // ================= 新增：万能动态弹窗控制逻辑 =================
+            const activeModalData = ref(null); // 为空则不显示弹窗
+
+            // 定义5个模块各自的属性 (标题、图标、主题色)
+            const modalConfigs = {
+                '双语查询': { id: 'search', title: '智能双语法律查询', icon: '🔍', headerClass: 'bg-gradient-to-r from-brand to-emerald-500' },
+                '智能翻译': { id: 'translate', title: '全场景法治AI翻译', icon: '🗣️', headerClass: 'bg-gradient-to-r from-blue-600 to-blue-400' },
+                '在线咨询': { id: 'consult', title: '双语律师在线解答', icon: '💬', headerClass: 'bg-gradient-to-r from-purple-600 to-purple-400' },
+                '案例解析': { id: 'case', title: '乡村高频法律案例库', icon: '📖', headerClass: 'bg-gradient-to-r from-orange-500 to-yellow-500' },
+                '法治工具': { id: 'tool', title: '基层治理文书生成器', icon: '🛠️', headerClass: 'bg-gradient-to-r from-gray-700 to-gray-500' }
+            };
+
+            const openModal = (featureName) => {
+                activeModalData.value = modalConfigs[featureName];
+            };
+            const closeModal = () => { activeModalData.value = null; };
+            // ==========================================================
+
+            let chartPain, chartRegion, chartFinance;
+            onMounted(() => {
+                chartPain = echarts.init(document.getElementById('chart-pain'));
+                chartRegion = echarts.init(document.getElementById('chart-region'));
+                chartFinance = echarts.init(document.getElementById('chart-finance'));
+                updateCharts();
+                window.addEventListener('resize', () => { chartPain.resize(); chartRegion.resize(); chartFinance.resize(); });
+            });
+
+            const updateCharts = () => {
+                // 图表配置略（保持原有渲染逻辑）
+                chartPain.setOption({
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                    grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+                    xAxis: { type: 'value', max: 100 },
+                    yAxis: { type: 'category', data: currentLang.value === 'zh' ? ['无途径', '网络搜索', '司法所', '亲友打听', '找律师/律所'] : ['يول يوق', 'توردا ئىزدەش', 'ئەدلىيەخانىسى', 'تۇغقانلىرى', 'ئادۋوكاتخانىسى'] },
+                    series: [{ type: 'bar', data: [57.72, 52.02, 67.83, 70.04, 71.14], itemStyle: { color: '#059669', borderRadius: 4 }, label: { show: true, position: 'right', formatter: '{c}%' } }]
+                });
+                chartRegion.setOption({
+                    tooltip: { trigger: 'item' },
+                    series: [{ type: 'pie', radius: ['50%', '80%'], data: [{ value: 151, name: '南疆' }, { value: 154, name: '北疆' }, { value: 100, name: '东疆' }, { value: 60, name: '城郊' }] }]
+                });
+                chartFinance.setOption({
+                    tooltip: { trigger: 'axis' }, xAxis: { type: 'category', data: ['Y1', 'Y2', 'Y3'] }, yAxis: { type: 'value' },
+                    series: [{ type: 'line', data: [0, 32.8, 186.5], smooth: true, areaStyle: { color: 'rgba(5,150,105,0.2)' }, itemStyle: { color: '#059669' } }]
+                });
+            };
+
+            return {
+                currentLang, t, toggleLang, carouselImages, currentCarouselIndex,
+                personas, activePersona, sortedFeatures,
+                activeModalData, openModal, closeModal // 暴露弹窗控制变量
+            };
         }
-    }
-
-    // 播放翻译结果语音（模拟）
-    function playResult() {
-        const resultText = document.getElementById('resultText').innerText;
-        if (resultText.includes('翻译结果将在此显示') || resultText.includes('请输入')) {
-            alert('暂无可播放的翻译结果！');
-            return;
-        }
-        alert(`正在播报：${resultText.substring(0, 20)}...`);
-        // 实际项目中可集成语音合成API：
-        // const utterance = new SpeechSynthesisUtterance(resultText);
-        // utterance.lang = 'ug-CN'; // 维吾尔语
-        // window.speechSynthesis.speak(utterance);
-    }
-
-    // 复制翻译结果到剪贴板
-    function copyResult() {
-        const resultText = document.getElementById('resultText').innerText;
-        if (resultText.includes('翻译结果将在此显示') || resultText.includes('请输入')) {
-            alert('暂无可复制的翻译结果！');
-            return;
-        }
-        // 复制到剪贴板
-        navigator.clipboard.writeText(resultText).then(() => {
-            alert('✅ 翻译结果已复制到剪贴板！');
-        }).catch(() => {
-            // 降级方案：手动创建文本框复制
-            const textArea = document.createElement('textarea');
-            textArea.value = resultText;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            alert('✅ 翻译结果已复制到剪贴板！');
-        });
-    }
-
-    // 初始化轮播图（确保移动端正常工作）
-    document.addEventListener('DOMContentLoaded', () => {
-        const carousel = new bootstrap.Carousel(document.getElementById('mainCarousel'), {
-            interval: 4000,
-            wrap: true,
-            touch: true // 支持移动端滑动
-        });
-    });
+    }).mount('#app');
 </script>
-
-<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
