@@ -3,16 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>伐词库 - 智慧中维双语助手</title>
+    <title>译路兴村 - 维汉双语普法与乡村治理平台</title>
+    
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.0"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { light: '#d1fae5', DEFAULT: '#059669', dark: '#064e3b', accent: '#f59e0b' }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Uyghur:wght@400;700&display=swap');
+        
         :root { 
-            --nd-green: #008751; 
+            --nd-green: #059669; 
             --nd-secondary: #28a745;
             --shadow-light: 0 4px 12px rgba(0,0,0,0.08);
             --shadow-hover: 0 10px 20px rgba(0,0,0,0.1);
@@ -20,185 +36,80 @@
         body { 
             background-color: #f8f9fa; 
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
         }
+        body.lang-uy { font-family: 'Noto Sans Uyghur', sans-serif; direction: rtl; }
+        
+        /* 导航栏 */
         .navbar { 
-            background: linear-gradient(90deg, #008751, #1a7a42); 
+            background: linear-gradient(90deg, #064e3b, #059669); 
             color: white; 
             padding: 15px 0; 
             box-shadow: var(--shadow-light);
             z-index: 999;
         }
-        .navbar-brand { font-weight: 700; }
-        .nav-link { 
-            color: rgba(255,255,255,0.85) !important; 
-            font-weight: 500; 
-            margin-left: 15px; 
-            transition: all 0.3s ease;
-        }
-        .nav-link:hover { 
-            color: #fff !important; 
-            transform: translateY(-2px);
-        }
-        .carousel-item { 
-            height: clamp(300px, 60vh, 480px);
-            background-size: cover; 
-            background-position: center; 
-            position: relative; 
-        }
-        .carousel-overlay { 
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
-            z-index: 1;
-        }
-        .carousel-caption { 
-            bottom: 25%; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8); 
-            z-index: 2;
-            padding: 0 15px;
-        }
-        .carousel-caption h5 { 
-            font-size: clamp(1.8rem, 5vw, 3.2rem); 
-            font-weight: 800; 
-        }
-        .carousel-caption p { 
-            font-size: clamp(1rem, 2.5vw, 1.5rem); 
-            opacity: 0.9; 
-        }
-        .main-card { 
-            border: none; 
-            border-radius: 20px; 
-            box-shadow: var(--shadow-light); 
-            margin-top: -60px; 
-            z-index: 100; 
-            position: relative; 
-            background: #fff;
-            transition: box-shadow 0.3s ease;
-        }
+        .navbar-brand { font-weight: 700; color: white !important;}
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; margin-left: 15px; transition: all 0.3s ease; cursor: pointer;}
+        .nav-link:hover { color: #fff !important; transform: translateY(-2px);}
+
+        /* 轮播图 */
+        .carousel-item { height: clamp(300px, 60vh, 480px); background-size: cover; background-position: center; position: relative; transition: opacity 1.2s ease-in-out; }
+        .carousel-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)); z-index: 1; }
+        .carousel-caption { bottom: 25%; text-shadow: 0 2px 10px rgba(0,0,0,0.8); z-index: 2; padding: 0 15px; }
+        .carousel-caption h5 { font-size: clamp(1.8rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: 1px; }
+        .carousel-caption p { font-size: clamp(1rem, 2.5vw, 1.5rem); font-weight: 300; opacity: 0.9; }
+
+        /* 翻译卡片 */
+        .main-card { border: none; border-radius: 20px; box-shadow: var(--shadow-light); margin-top: -60px; z-index: 100; position: relative; background: #fff; transition: box-shadow 0.3s ease;}
         .main-card:hover { box-shadow: var(--shadow-hover); }
-        .input-area { 
-            border: 1px solid #e0e0e0; 
-            border-radius: 12px; 
-            padding: 15px; 
-            background: #fdfdfd;
-            transition: border-color 0.3s ease;
-        }
+        .input-area { border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; background: #fdfdfd; transition: border-color 0.3s ease;}
         .input-area:focus-within { border-color: var(--nd-secondary); }
-        textarea { 
-            border: none !important; 
-            background: transparent !important; 
-            resize: none; 
-            width: 100%; 
-            outline: none; 
-            font-size: 1.1rem;
-            min-height: 80px;
-        }
-        .btn-main { 
-            background: var(--nd-green); 
-            color: white; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            border: none;
-            padding: 12px 0;
-            transition: all 0.3s ease;
-        }
-        .btn-main:hover { 
-            background: #006b40;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,135,81,0.3);
-        }
-        .action-bar { 
-            border-top: 1px dashed #ddd; 
-            margin-top: 25px; 
-            padding-top: 20px; 
-        }
-        .action-item { 
-            cursor: pointer; 
-            color: #555; 
-            transition: all 0.3s ease;
-            padding: 10px 0;
-        }
-        .action-item:hover { 
-            color: var(--nd-green); 
-            transform: translateY(-3px); 
-        }
+        textarea { border: none !important; background: transparent !important; resize: none; width: 100%; outline: none; font-size: 1.1rem; min-height: 80px;}
+        .btn-main { background: var(--nd-green); color: white; border-radius: 12px; font-weight: bold; border: none; padding: 12px 0; transition: all 0.3s ease;}
+        .btn-main:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5,150,105,0.3); color: white;}
+        .btn-main:active { transform: translateY(0); }
+        
+        .action-bar { border-top: 1px dashed #ddd; margin-top: 25px; padding-top: 20px; }
+        .action-item { cursor: pointer; color: #555; transition: all 0.3s ease; padding: 10px 0; }
+        .action-item:hover { color: var(--nd-green); transform: translateY(-3px); }
+
+        #resultBox { background: #f4f9f5; min-height: 100px; border-left: 4px solid var(--nd-green); transition: all 0.3s ease;}
+        #resultBox.empty { color: #999; }
+        
+        /* 其他样式 */
         .stats-section { padding: 50px 0; margin-top: 30px; }
         .stat-box { text-align: center; padding: 20px; transition: transform 0.3s ease; }
         .stat-box:hover { transform: translateY(-5px); }
-        .stat-num { 
-            font-size: clamp(1.8rem, 4vw, 2.5rem); 
-            font-weight: 900; 
-            color: var(--nd-green); 
-            margin-bottom: 5px; 
-        }
+        .stat-num { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 900; color: var(--nd-green); margin-bottom: 5px; }
         .stat-text { color: #6c757d; font-size: 1rem; }
-        .feature-card { 
-            border: none; 
-            border-radius: 15px; 
-            transition: all 0.3s ease; 
-            background: #fff;
-            height: 100%;
-        }
-        .feature-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: var(--shadow-hover); 
-        }
-        .feature-icon { 
-            width: 60px; 
-            height: 60px; 
-            background: #e8f5e9; 
-            color: var(--nd-green); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.5rem; 
-            margin-bottom: 15px;
-            transition: background-color 0.3s ease;
-        }
-        .feature-card:hover .feature-icon { background-color: #d4edda; }
-        #resultBox {
-            background: #f4f9f5; 
-            min-height: 100px; 
-            border-left: 4px solid var(--nd-green);
-            transition: all 0.3s ease;
-        }
-        #resultBox.empty { color: #999; }
-        #resultBox.loading { color: var(--nd-green); }
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Uyghur:wght@400;700&display=swap');
+        
+        .feature-card { border: none; border-radius: 15px; transition: all 0.3s ease; background: #fff; height: 100%; }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        .feature-icon { width: 60px; height: 60px; background: #e8f5e9; color: var(--nd-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 15px; transition: background-color 0.3s ease;}
+        
         .text-gradient { background: linear-gradient(135deg, #059669 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hover-card { transition: all 0.3s ease; }
         .hover-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(5, 150, 105, 0.1), 0 10px 10px -5px rgba(5, 150, 105, 0.04); }
         .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; }
-        .carousel-item { transition: opacity 1.2s ease-in-out; }
-        .carousel-active { opacity: 1; position: relative; z-index: 10; }
-        .carousel-inactive { opacity: 0; position: absolute; top: 0; left: 0; width: 100%; z-index: 0; }
-        body.lang-uy { font-family: 'Noto Sans Uyghur', sans-serif; direction: rtl; }
-        footer {
-            margin-top: 50px;
-            padding: 20px 0;
-            background-color: #212529;
-            color: #fff;
-        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
 
 <nav class="navbar navbar-expand-lg sticky-top">
     <div class="container">
-        <a class="navbar-brand h1 mb-0 fs-4" href="#"><i class="fa-solid fa-leaf me-2"></i>新疆农大 · 伐词库</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <a class="navbar-brand h1 mb-0 fs-4 flex items-center" href="#"><i class="fa-solid fa-leaf me-2"></i>译路兴村 · 伐词库</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon text-white"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('软件说明')"><i class="fa-solid fa-circle-info me-1"></i>软件说明</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('用户设置')"><i class="fa-solid fa-gear me-1"></i>用户设置</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('账号管理')"><i class="fa-solid fa-user me-1"></i>账号管理</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="alert('问题反馈')"><i class="fa-solid fa-comment-dots me-1"></i>问题反馈</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="alert('进入软件使用指南...')"><i class="fa-solid fa-circle-info me-1"></i>软件说明</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="alert('打开用户设置面板...')"><i class="fa-solid fa-gear me-1"></i>用户设置</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="alert('进入账号管理页...')"><i class="fa-solid fa-user me-1"></i>账号管理</a></li>
+                <li class="nav-item"><a class="nav-link" onclick="alert('感谢您的反馈！...')"><i class="fa-solid fa-comment-dots me-1"></i>问题反馈</a></li>
             </ul>
         </div>
     </div>
@@ -208,63 +119,49 @@
     <div class="carousel-inner">
         <div class="carousel-item active" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner1.jpg.jpg');">
             <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>深入基层</h5>
-                <p>让每一份嘱托都能被听懂</p>
-            </div>
+            <div class="carousel-caption"><h5>深入基层</h5><p>让每一份嘱托都能被听懂</p></div>
         </div>
         <div class="carousel-item" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner2.jpg.webp');">
             <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>科技兴农</h5>
-                <p>新疆农业大学技术支持</p>
-            </div>
+            <div class="carousel-caption"><h5>科技兴农</h5><p>新疆农业大学技术支持</p></div>
         </div>
         <div class="carousel-item" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner3.jpg.webp');">
             <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>海量词库</h5>
-                <p>专为农业与基层工作打造</p>
-            </div>
-        </div>
-        <div class="carousel-item" style="background-image: url('https://raw.githubusercontent.com/18713937090/18713937090.github.io/main/banner4.jpg.jpg');">
-            <div class="carousel-overlay"></div>
-            <div class="carousel-caption">
-                <h5>双语桥梁</h5>
-                <p>连接语言，耕耘梦想</p>
-            </div>
+            <div class="carousel-caption"><h5>海量词库</h5><p>专为农业与基层工作打造</p></div>
         </div>
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
+        <span class="carousel-control-prev-icon"></span>
     </button>
     <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
+        <span class="carousel-control-next-icon"></span>
     </button>
 </div>
 
 <div class="container pb-4">
-    <div class="card main-card p-4 mx-auto" style="max-width: 900px;">
+    <div class="card main-card p-4 mx-auto shadow-xl" style="max-width: 900px;">
         <div class="d-flex justify-content-between mb-3 px-2">
-            <span class="fw-bold text-success">中文 (简体)</span>
-            <i class="fa-solid fa-arrow-right-arrow-left text-muted"></i>
-            <span class="fw-bold text-success">维吾尔语 (Uyghur)</span>
+            <span class="fw-bold text-success fs-5">中文 (简体)</span>
+            <i class="fa-solid fa-arrow-right-arrow-left text-muted mt-1 fs-5"></i>
+            <span class="fw-bold text-success fs-5" style="font-family: 'Noto Sans Uyghur', sans-serif;">ئۇيغۇرچە (Uyghur)</span>
         </div>
+
         <div class="input-area mb-3">
-            <textarea id="inputText" rows="3" placeholder="请输入要翻译的内容，例如：地力补贴怎么申请？"></textarea>
+            <textarea id="inputText" rows="3" placeholder="请输入要翻译的中文内容，例如：地力补贴怎么申请？"></textarea>
         </div>
-        <button class="btn btn-main w-100 py-2 shadow-sm fs-5" onclick="doTranslate()">
-            <i class="fa-solid fa-language me-2"></i>一键智能翻译
+
+        <button class="btn btn-main w-100 py-3 fs-5 shadow" onclick="window.doTranslate()">
+            <i class="fa-solid fa-language me-2"></i>一键智能翻译 (纯离线引擎)
         </button>
-        <div id="resultBox" class="mt-4 p-3 rounded empty">
+
+        <div id="resultBox" class="mt-4 p-4 rounded empty">
             <div id="resultText" class="fs-5 text-dark">翻译结果将在此显示...</div>
-            <div class="text-end mt-2">
-                <i class="fa-solid fa-volume-high me-3 text-success" style="cursor:pointer;" onclick="playResult()"></i>
-                <i class="fa-solid fa-copy text-success" style="cursor:pointer;" onclick="copyResult()"></i>
+            <div class="text-end mt-3 border-top pt-2">
+                <i class="fa-solid fa-volume-high me-3 text-success fs-5 hover:opacity-75" style="cursor:pointer;" onclick="window.playResult()" title="朗读"></i>
+                <i class="fa-solid fa-copy text-success fs-5 hover:opacity-75" style="cursor:pointer;" onclick="window.copyResult()" title="复制"></i>
             </div>
         </div>
+
         <div class="action-bar d-flex justify-content-around text-center flex-wrap">
             <div class="action-item col-3 mb-2"><i class="fa-solid fa-file-word fs-3 d-block mb-1 text-success"></i>文档翻译</div>
             <div class="action-item col-3 mb-2"><i class="fa-solid fa-camera-viewfinder fs-3 d-block mb-1 text-success"></i>拍照识词</div>
@@ -275,122 +172,253 @@
 </div>
 
 <div class="container stats-section border-top">
-    <div class="row text-center">
+    <div class="row text-center mb-5">
         <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">15W+</div>
-                <div class="stat-text">农业专业词条</div>
-            </div>
+            <div class="stat-box"><div class="stat-num">15W+</div><div class="stat-text">农业专业词条</div></div>
         </div>
         <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">98.5%</div>
-                <div class="stat-text">翻译准确率</div>
-            </div>
+            <div class="stat-box"><div class="stat-num">98.5%</div><div class="stat-text">翻译准确率</div></div>
         </div>
         <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">0 ms</div>
-                <div class="stat-text">离线响应延迟</div>
-            </div>
+            <div class="stat-box"><div class="stat-num">0 ms</div><div class="stat-text">离线响应延迟</div></div>
         </div>
         <div class="col-md-3 col-6 mb-3">
-            <div class="stat-box">
-                <div class="stat-num">120+</div>
-                <div class="stat-text">服务村镇数量</div>
-            </div>
+            <div class="stat-box"><div class="stat-num">120+</div><div class="stat-text">服务村镇数量</div></div>
         </div>
     </div>
-</div>
 
-<div class="container pb-5">
-    <div class="text-center mb-4">
-        <h4 class="fw-bold text-success">系统核心优势</h4>
+    <div class="text-center mb-4 mt-5">
+        <h4 class="fw-bold text-success text-3xl mb-2">系统核心优势</h4>
         <p class="text-muted">专为新疆基层工作场景量身定制</p>
     </div>
-    <div class="row g-4">
+    <div class="row g-4 pb-5">
         <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 shadow-sm">
-                <div class="feature-icon"><i class="fa-solid fa-wifi"></i></div>
-                <h5 class="fw-bold">纯离线引擎</h5>
+            <div class="card feature-card p-4 h-100 shadow-sm text-center">
+                <div class="feature-icon mx-auto"><i class="fa-solid fa-wifi"></i></div>
+                <h5 class="fw-bold text-xl mb-3">纯离线引擎</h5>
                 <p class="text-muted mb-0">针对偏远乡村无网、弱网环境，自研轻量级离线翻译模型，随时随地可用。</p>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 shadow-sm">
-                <div class="feature-icon"><i class="fa-solid fa-seedling"></i></div>
-                <h5 class="fw-bold">农大权威语料</h5>
+            <div class="card feature-card p-4 h-100 shadow-sm text-center">
+                <div class="feature-icon mx-auto"><i class="fa-solid fa-seedling"></i></div>
+                <h5 class="fw-bold text-xl mb-3">农大权威语料</h5>
                 <p class="text-muted mb-0">依托新疆农业大学专家智库，对农业技术、惠农政策等垂直领域进行深度微调。</p>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 shadow-sm">
-                <div class="feature-icon"><i class="fa-solid fa-ear-listen"></i></div>
-                <h5 class="fw-bold">方言口音适配</h5>
+            <div class="card feature-card p-4 h-100 shadow-sm text-center">
+                <div class="feature-icon mx-auto"><i class="fa-solid fa-ear-listen"></i></div>
+                <h5 class="fw-bold text-xl mb-3">方言口音适配</h5>
                 <p class="text-muted mb-0">优化了针对基层群众的口语化表达和语音识别，让沟通不再局限于书面语。</p>
             </div>
         </div>
     </div>
 </div>
 
-<footer class="text-center bg-dark text-light py-4 mt-auto">
-    <p class="mb-0">© 2026 新疆农业大学 · 伐词库团队 版权所有</p>
-    <small class="text-muted mt-1 d-block">本系统仅用于基层农业工作沟通辅助，禁止商用</small>
+<div id="app">
+    {% raw %}
+    <section id="painpoints" class="py-20 bg-white relative border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-extrabold text-gray-900">{{ t('painpointsTitle') }}</h2>
+                <p class="mt-4 text-gray-500 max-w-2xl mx-auto">{{ t('painpointsSub') }}</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-xl shadow-brand/5 hover-card">
+                        <div class="flex items-end gap-4 mb-4">
+                            <h3 class="text-6xl font-black text-brand">{{ t('statPain1Value') }}</h3>
+                            <div class="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm font-bold mb-2">高频痛点</div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800 mb-2">{{ t('statPain1Label') }}</p>
+                        <p class="text-gray-500 leading-relaxed">{{ t('statPain1Desc') }}</p>
+                        <div class="mt-6 w-full bg-gray-100 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-brand to-brand-accent h-2.5 rounded-full" style="width: 72.06%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-7 bg-white rounded-2xl border border-gray-100 p-6 shadow-2xl shadow-brand/10">
+                    <div id="chart-pain" class="h-[400px] w-full"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="dashboard" class="py-24 bg-brand-dark text-white relative overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand/30 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <h2 class="text-4xl font-extrabold text-center mb-16 tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">{{ t('dashboardTitle') }}</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-bold mb-4 text-emerald-300">{{ t('chartRegionTitle') }}</h3>
+                    <div id="chart-region" class="h-64 w-full"></div>
+                </div>
+                <div class="glass-panel p-8 flex flex-col justify-center items-center text-center">
+                    <h3 class="text-2xl font-bold mb-6 text-white z-10">{{ t('modelTitle') }}</h3>
+                    <div class="bg-black/30 p-6 rounded-xl font-mono text-sm leading-loose mb-6 w-full text-emerald-100 z-10 border border-emerald-900/50">
+                        E = Σ (Price_k × P_k)<br/>E = (5×0.304) + (20×0.315) + (40×0.244)<br/>
+                        <div class="mt-4 pt-4 border-t border-emerald-800/50"><strong class="text-3xl text-brand-accent">E ≈ 17.58 元</strong></div>
+                    </div>
+                </div>
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-bold mb-6 text-emerald-300">{{ t('taizhangTitle') }}</h3>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between items-center bg-white/5 p-3 rounded-lg"><span class="bg-brand-accent/20 text-brand-accent px-2.5 py-1 rounded text-xs font-bold">土地流转</span><span class="text-sm text-gray-300">莎车县 · 刚刚</span></li>
+                        <li class="flex justify-between items-center bg-white/5 p-3 rounded-lg"><span class="bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded text-xs font-bold">婚姻家庭</span><span class="text-sm text-gray-300">温宿县 · 15分钟前</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endraw %}
+</div>
+
+<footer class="text-center bg-dark text-light py-5 mt-auto">
+    <p class="mb-0 fs-5">© 2026 新疆农业大学 · 伐词库团队 版权所有</p>
+    <small class="text-muted mt-2 d-block">第二十届“挑战杯”竞赛展示专用 | 本系统仅用于基层农业工作沟通辅助，禁止商用</small>
 </footer>
 
 <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    let translator_zh_ug = null;
-    let translator_ug_zh = null;
+    const { createApp, ref, onMounted } = Vue;
 
-    async function loadModel() {
-        if (translator_zh_ug) return;
-        const { pipeline } = Xenova;
-        translator_zh_ug = await pipeline("translation", "Xenova/opus-mt-zh-ug");
-        translator_ug_zh = await pipeline("translation", "Xenova/opus-mt-ug-zh");
-    }
+    const locales = {
+        'zh': {
+            'painpointsTitle': '实地调研：直击乡村法治痛点', 'painpointsSub': '基于全疆536份有效问卷数据的深度量化分析，揭示真实的供需矛盾。',
+            'statPain1Value': '72.0%', 'statPain1Label': '存在语言沟通障碍', 'statPain1Desc': '语言壁垒是法治服务最根本的障碍，导致传统单一普法效果大打折扣。',
+            'dashboardTitle': '译路兴村·基层治理数字化指挥中心', 'chartRegionTitle': '全疆试点法治需求热度分布', 'modelTitle': '算法模型收益演算', 'taizhangTitle': '纠纷调解实时汇聚节点'
+        }
+    };
 
-    async function doTranslate() {
-        const input = document.getElementById('inputText').value.trim();
-        const box = document.getElementById('resultBox');
-        const text = document.getElementById('resultText');
+    createApp({
+        setup() {
+            const t = (key) => locales['zh'][key] || key;
 
-        if (!input) {
-            alert('请输入内容');
+            onMounted(() => {
+                // 初始化 ECharts 图表
+                setTimeout(() => {
+                    if(document.getElementById('chart-pain')) {
+                        let chartPain = echarts.init(document.getElementById('chart-pain'));
+                        chartPain.setOption({
+                            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                            grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+                            xAxis: { type: 'value', max: 100 },
+                            yAxis: { type: 'category', data: ['无途径', '网络搜索', '司法所', '亲友打听', '找律师/律所'] },
+                            series: [{ type: 'bar', data: [57.72, 52.02, 67.83, 70.04, 71.14], itemStyle: { color: '#059669', borderRadius: 4 }, label: { show: true, position: 'right', formatter: '{c}%' } }]
+                        });
+                    }
+                    if(document.getElementById('chart-region')) {
+                        let chartRegion = echarts.init(document.getElementById('chart-region'));
+                        chartRegion.setOption({
+                            tooltip: { trigger: 'item' },
+                            series: [{ type: 'pie', radius: ['40%', '70%'], data: [{ value: 151, name: '南疆' }, { value: 154, name: '北疆' }, { value: 100, name: '东疆' }, { value: 60, name: '城郊' }] }]
+                        });
+                    }
+                }, 500);
+            });
+
+            return { t };
+        }
+    }).mount('#app');
+</script>
+
+<script type="module">
+    // 引入 Transformers.js (官方 CDN)
+    import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0';
+
+    // 禁用本地模型检查，强制从远端下载并缓存到浏览器
+    env.allowLocalModels = false;
+
+    // 将全局函数挂载到 window，使得 HTML 的 onclick 可以调用
+    window.doTranslate = async function() {
+        const inputText = document.getElementById('inputText').value.trim();
+        const resultBox = document.getElementById('resultBox');
+        const resultText = document.getElementById('resultText');
+        
+        if (!inputText) {
+            resultBox.classList.add('empty');
+            resultText.innerText = "请输入需要翻译的内容后再尝试！";
+            alert("温馨提示：请先输入要翻译的中文内容");
             return;
         }
 
-        box.classList.remove('empty');
-        box.classList.add('loading');
-        text.innerText = '正在加载模型并翻译中，请稍候...';
-
+        resultBox.classList.remove('empty');
+        resultBox.classList.add('loading');
+        
         try {
-            await loadModel();
-            const out = await translator_zh_ug(input);
-            const res = out[0].translation_text;
-            box.classList.remove('loading');
-            text.innerText = res;
+            // 第 1 步：加载模型（首次下载约 600MB，之后直接从浏览器缓存读取）
+            if (!window.translatorPipeline) {
+                resultText.innerHTML = `
+                    <div class="d-flex flex-column align-items-center justify-content-center py-3">
+                        <div class="spinner-border text-success mb-3" role="status"></div>
+                        <div id="loadingStatus" class="text-success fw-bold mb-2">正在初始化离线AI引擎 (初次需下载模型，请耐心等待)...</div>
+                        <div class="progress w-100" style="height: 12px; border-radius: 6px;">
+                            <div id="loadingBar" class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted mt-2">提示：模型加载后将永久缓存在您的设备中，后续断网亦可使用。</small>
+                    </div>`;
+
+                // 下载并初始化 NLLB-200 蒸馏版大模型
+                window.translatorPipeline = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', {
+                    progress_callback: (x) => {
+                        if (x.status === 'downloading') {
+                            const bar = document.getElementById('loadingBar');
+                            const status = document.getElementById('loadingStatus');
+                            if (bar && status) {
+                                bar.style.width = `${x.progress}%`;
+                                status.innerText = `正在下载模型包 (${x.file}) ... ${Math.round(x.progress)}%`;
+                            }
+                        } else if (x.status === 'ready') {
+                            const status = document.getElementById('loadingStatus');
+                            if (status) status.innerText = "引擎初始化完毕，正在执行翻译...";
+                        }
+                    }
+                });
+            }
+
+            // 第 2 步：调用 NPU/CPU 算力进行推理
+            resultText.innerHTML = '<div class="d-flex align-items-center justify-content-center py-3"><div class="spinner-border spinner-border-sm text-success me-2"></div>本地引擎正在解析中...</div>';
+
+            const output = await window.translatorPipeline(inputText, {
+                src_lang: 'zho_Hans',   // 简体中文
+                tgt_lang: 'uig_Arab'    // 维吾尔语（阿拉伯字母）
+            });
+
+            // 第 3 步：渲染翻译结果（维吾尔语需要从右向左排版）
+            const translatedText = output[0].translation_text;
+            resultBox.classList.remove('loading');
+            resultText.innerHTML = `<div dir="rtl" class="text-end text-dark fs-4" style="font-family: 'Noto Sans Uyghur', sans-serif;">${translatedText}</div>`;
+            
         } catch (e) {
-            box.classList.remove('loading');
-            text.innerText = '翻译失败：' + e.message;
+            resultBox.classList.remove('loading');
+            resultText.innerHTML = `
+                <span class="text-danger fw-bold">⚠️ 离线引擎启动失败：<br>${e.message}</span>
+                <br><small class="text-muted mt-2 d-block">排障提示：请确保使用的是现代浏览器 (如 Chrome/Edge) 并允许网站存储数据。</small>`;
+            console.error('Transformers.js 运行错误：', e);
         }
-    }
+    };
 
-    function playResult() {
-        const t = document.getElementById('resultText').innerText;
-        if (t.includes('显示') || t.includes('失败')) { alert('暂无语音'); return; }
-        alert('语音播报：' + t.substring(0, 30) + '...');
-    }
+    // 朗读与复制功能保持不变
+    window.playResult = function() {
+        const resultText = document.getElementById('resultText').innerText;
+        if (resultText.includes('将在此显示') || resultText.includes('请输入') || resultText.includes('失败')) {
+            alert('暂无可播放的翻译结果！'); return;
+        }
+        alert(`开始调用本地语音合成：\n${resultText}`);
+    };
 
-    function copyResult() {
-        const t = document.getElementById('resultText').innerText;
-        if (t.includes('显示') || t.includes('失败')) { alert('暂无内容'); return; }
-        navigator.clipboard.writeText(t).then(()=>alert('已复制')).catch(()=>alert('复制失败'));
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        new bootstrap.Carousel(document.getElementById('mainCarousel'), { interval:4000, wrap:true });
-    });
+    window.copyResult = function() {
+        const resultText = document.getElementById('resultText').innerText;
+        if (resultText.includes('将在此显示') || resultText.includes('请输入') || resultText.includes('失败')) {
+            alert('暂无可复制的内容！'); return;
+        }
+        navigator.clipboard.writeText(resultText).then(() => {
+            alert('✅ 翻译结果已成功复制！');
+        }).catch(() => alert('⚠️ 复制失败，请手动选取复制。'));
+    };
 </script>
+
 </body>
 </html>
